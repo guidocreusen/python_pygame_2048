@@ -19,18 +19,20 @@ class Board(object):
 		64: (149, 189, 229)
 	}
 
-	def __init__(self):
+	def __init__(self, bg_col):
+		#set bg color
+		self.bg_col = bg_col
 		#set all values to 0
 		for i in range(4):
 			self.squares.append([0, 0, 0, 0])
 
 
-	#draws the background, returns a surface with dimensions (size, size)
-	def draw_bg(self, size):
-		bg_rect = pygame.Rect(0, 0, size, size)
-		bg = AAfilledRoundedRect(bg_rect, (100,120,100), 0.05)
+	#draws the background, blits a surface with dimensions (size, size)
+	def draw_bg(self, screen, scr_size, margins):
+		bg_rect = pygame.Rect(0, 0, scr_size[0]-2*margins[0], scr_size[1]-2*margins[1])
+		bg = AAfilledRoundedRect(bg_rect, self.bg_col, 0.05)
 
-		return bg
+		return screen.blit(bg, (margins[0], margins[1]))
 
 		
 
