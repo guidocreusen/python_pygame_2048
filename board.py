@@ -55,4 +55,8 @@ class Board(object):
 
 			draw_y += 0.2425*(size[1]-2*margins[1])
 
+	#draws the entire board, by first drawing bg then squares
+	def draw(self, surface, size, margins):
+		self.draw_bg(surface, size, margins)
+		self.draw_squares(surface, size, margins)
 

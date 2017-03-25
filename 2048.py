@@ -26,8 +26,7 @@ while True:
 	scr.fill((240,240,240))
 
 	#draw board
-	board.draw_bg(scr, SCR_SIZE, MARGINS)
-	board.draw_squares(scr, SCR_SIZE, MARGINS)
+	board.draw(scr, SCR_SIZE, MARGINS)
 
 
 	pygame.display.update()
