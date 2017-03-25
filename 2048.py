@@ -7,7 +7,7 @@ from board import Board
 
 #constants
 SCR_SIZE = (640, 640)
-MARGINS = (80, 80)
+MARGINS = (100, 100)
 
 #init
 pygame.init()
@@ -27,5 +27,7 @@ while True:
 
 	#draw board
 	board.draw_bg(scr, SCR_SIZE, MARGINS)
+	board.draw_squares(scr, SCR_SIZE, MARGINS)
+
 
 	pygame.display.update()
