@@ -12,7 +12,7 @@ MARGINS = (100, 100)
 #init
 pygame.init()
 scr = pygame.display.set_mode(SCR_SIZE, 0, 32)
-board = Board((160, 160, 170))
+board = Board()
 
 #main loop
 while True:

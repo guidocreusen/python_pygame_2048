@@ -2,34 +2,37 @@
 import pygame
 from aaroundedrect import *
 
-#board class stores square value as list of lists
-
 class Board(object):
 	#stores the squares value
 	squares = []
 
-	#stores the colors of squares
+	#color values
+	bg_color = (187, 173, 160)
 	colors = {
-		0: (120, 100, 100),
-		2: (240, 240, 240),
-		4: (255, 0, 0),
-		8: (204, 128, 51),
-		16: (204, 51, 51),
-		32: (204, 51, 128),
-		64: (149, 189, 229)
+		0: (205, 192, 180),
+		2: (238, 228, 218),
+		4: (237, 224, 200),
+		8: (242, 177, 121),
+		16: (245, 150, 99),
+		32: (246, 124, 95),
+		64: (246, 107, 65),
+		128: (237, 208, 114),
+		256: (237, 204, 97),
+		512: (237, 200, 80)
 	}
+	txt_color_light = (249,247,243)
+	txt_color_dark = (117, 109, 101)
 
-	def __init__(self, bg_col):
-		#set bg color
-		self.bg_col = bg_col
+	def __init__(self):
+
 		#set all values to 0
 		for i in range(4):
-			self.squares.append([0, 0, 0, 0])
+			self.squares.append([0, 2, 4, 8])
 
 	#draws the background, blits a surface with dimensions (size, size)
 	def draw_bg(self, surface, size, margins):
 		bg_rect = pygame.Rect(0, 0, size[0]-2*margins[0], size[1]-2*margins[1])
-		bg_rounded = AAfilledRoundedRect(bg_rect, self.bg_col, 0.04)
+		bg_rounded = AAfilledRoundedRect(bg_rect, self.bg_color, 0.04)
 
 		return surface.blit(bg_rounded, (margins[0], margins[1]))
 
@@ -47,9 +50,19 @@ class Board(object):
 			draw_x = (margins[0]*0.955)+size[0]*0.03
 			#draw the squares
 			for square in x_row:
+				#generate a Rect object of the right proportions (later converted to roundrect surface)
 				square_rect = pygame.Rect(0,0, 0.2125*(size[0]-2*margins[0]), 0.2125*(size[1]-2*margins[1]))
-				square_rounded = AAfilledRoundedRect(square_rect, (200,200,200), 0.1)
+				square_rounded = AAfilledRoundedRect(square_rect, self.colors[square], 0.1)
 				surface.blit(square_rounded, (draw_x, draw_y))
+				
+				#draw text of value if square is not 0
+				if square:
+					#create and blit font surface
+					font = pygame.font.SysFont("arial", int(size[1]/8))
+					txt_color = self.txt_color_dark if (square <= 4) else self.txt_color_light
+					txt_surface = font.render(str(square), True, txt_color)
+					txt_coordinates = (draw_x+(0.2125*(size[0]-2*margins[0]))/4, draw_y+(0.2125*(size[1]-2*margins[1]))/20)
+					surface.blit(txt_surface, txt_coordinates)
 
 				draw_x += 0.2425*(size[0]-2*margins[0])
 
