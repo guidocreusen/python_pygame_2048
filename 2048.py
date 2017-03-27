@@ -13,6 +13,9 @@ MARGINS = (100, 100)
 pygame.init()
 scr = pygame.display.set_mode(SCR_SIZE, 0, 32)
 board = Board()
+scr.fill((240,240,240))
+board.draw(scr, SCR_SIZE, MARGINS)
+pygame.display.update()
 
 #main loop
 while True:
@@ -21,6 +24,8 @@ while True:
 	event = pygame.event.wait()
 	if event.type == QUIT:
 		sys.exit()
+	elif not (event.type == KEYDOWN):
+		continue
 
 	#draw bg
 	scr.fill((240,240,240))
