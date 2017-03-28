@@ -1,6 +1,7 @@
 #imports
 import pygame
 from aaroundedrect import *
+import random
 
 class Board(object):
 	#stores the squares value
@@ -27,7 +28,28 @@ class Board(object):
 
 		#set all values to 0
 		for i in range(4):
-			self.squares.append([0, 2, 4, 8])
+			self.squares.append([0, 0, 2, 4])
+
+	#adds a random value of either 2 or 4 on an empty square, returns false if no empty squares
+	def add_random_square(self):
+		#return false if none empty (flatten array)
+		flatten_squares = [item for sublist in self.squares for item in sublist]
+
+		if not 0 in flatten_squares:
+			return False
+
+		#generate random pos until one is empty
+		random_pos = (random.randint(0,3), random.randint(0,3))
+
+		#loops until the square value is zero
+		while self.squares[random_pos[1]][random_pos[0]]:
+			random_pos = (random.randint(0,3), random.randint(0,3))
+
+		#add either 2 or 4, with a ration of 4 : 1
+		new_value = random.choice((2,2,2,2,4))
+		self.squares[random_pos[1]][random_pos[0]] = new_value
+
+		return True
 
 	#draws the background, blits a surface with dimensions (size, size)
 	def draw_bg(self, surface, size, margins):
