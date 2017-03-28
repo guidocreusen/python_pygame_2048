@@ -15,7 +15,7 @@ scr = pygame.display.set_mode(SCR_SIZE, 0, 32)
 scr.fill((240,240,240))
 
 board = Board()
-board.add_random_square():
+board.add_random_square()
 board.draw(scr, SCR_SIZE, MARGINS)
 
 pygame.display.update()
