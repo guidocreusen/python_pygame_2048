@@ -32,7 +32,7 @@ class Board(object):
 			self.squares.append([0, 0, 0, 0])
 
 	
-	#changes positions when the game moves in a certain direction
+	#changes positions according to core game mechanism in a certain direction
 	#direction as string "up, down, left, right"
 	def move_in_direction(self, direction):
 		"""
@@ -214,11 +214,12 @@ class Board(object):
 				#draw text of value if square is not 0
 				if square:
 					#create and blit font surface
-					font = pygame.font.SysFont("arial", int(size[1]/8))
+					font = pygame.font.SysFont("bold", int(size[1]/10))
 					txt_color = self.txt_color_dark if (square <= 4) else self.txt_color_light
 					txt_surface = font.render(str(square), True, txt_color)
-					txt_coordinates = (draw_x+(0.2125*(size[0]-2*margins[0]))/4, draw_y+(0.2125*(size[1]-2*margins[1]))/20)
-					surface.blit(txt_surface, txt_coordinates)
+					txt_x = draw_x+(0.2125*(size[0]-2*margins[0]))/2-0.5*txt_surface.get_width()
+					txt_y = draw_y+(0.2125*(size[1]-2*margins[1]))/2-0.5*txt_surface.get_height()
+					surface.blit(txt_surface, (txt_x, txt_y))
 
 				draw_x += 0.2425*(size[0]-2*margins[0])
 
