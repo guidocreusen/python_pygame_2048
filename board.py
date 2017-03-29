@@ -227,7 +227,7 @@ class Board(object):
 				#draw text of value if square is not 0
 				if square:
 					#create and blit font surface
-					font = pygame.font.SysFont("bold", int(size[1]/10))
+					font = pygame.font.SysFont("bold", int(size[1]/12))
 					txt_color = self.txt_color_dark if (square <= 4) else self.txt_color_light
 					txt_surface = font.render(str(square), True, txt_color)
 					txt_x = draw_x+(0.2125*(size[0]-2*margins[0]))/2-0.5*txt_surface.get_width()
