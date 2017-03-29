@@ -93,6 +93,7 @@ class Board(object):
 		elif direction == "up":
 			pass
 
+
 		elif direction == "right":
 			#loop over rows
 			y = 0
@@ -111,9 +112,7 @@ class Board(object):
 					break if all following squares are empty
 					NOTE: needs to use x_row[x] instead of square because both iterating and modifying list
 					"""
-					print("x_row: ",x_row,"x: ",x)
 					while x_row[x] == 0 and x >= 1:
-						print("delete loop starts")
 						#move to next x if all others also empty
 						rest_of_row_empty = True
 						for n in range(0, x)[::-1]:
@@ -125,9 +124,7 @@ class Board(object):
 
 						#move all others by one
 						del (self.squares[y][x])
-						print("BEFORE: ",self.squares[y])
 						self.squares[y].insert(0, 0)
-						print("AFTER: ",self.squares[y])
 					x -= 1
 
 				#repeat the loop over x-row after deleting empty

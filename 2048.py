@@ -47,6 +47,8 @@ while True:
 			board.move_in_direction("left")
 		elif event.key ==  K_RIGHT:
 			board.move_in_direction("right")
+		elif event.key ==  K_UP:
+			board.move_in_direction("up")
 	else:
 		continue
 
