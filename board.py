@@ -37,13 +37,15 @@ class Board(object):
 	def move_in_direction(self, direction):
 		"""
 		core algorithm: 
-		loop over row/column from side the row/column is moved towards
+		loop over row from side the row is moved towards
 		if row is empty move to next
 		if the next square is empty, move all others by one and repeat on same square until not empty or row empty 
 		move through row, and repeat for all empty squares except empty end
 		repeat loop over row
 		if the next square is the same, merge them and move all others behind by one
 		if the next square is non-empty non-identical, move to next square in loop
+
+		up/down movement transposes the nested lists, moves right (down) or left (up) and transposes them back
 		"""
 
 		#case switch the direction parameter
@@ -91,7 +93,12 @@ class Board(object):
 				y += 1
 
 		elif direction == "up":
-			pass
+			#transpose
+			self.squares = list(map(list, zip(*self.squares)))
+			#move left
+			self.move_in_direction("left")
+			#transpose back
+			self.squares = list(map(list, zip(*self.squares)))
 
 
 		elif direction == "right":
@@ -116,7 +123,6 @@ class Board(object):
 						#move to next x if all others also empty
 						rest_of_row_empty = True
 						for n in range(0, x)[::-1]:
-							print("n: ", n)
 							if not self.get_square((n,y)) == 0:
 								rest_of_row_empty = False
 						if rest_of_row_empty:
@@ -137,6 +143,15 @@ class Board(object):
 						self.squares[y].insert(0, 0)
 					x -= 1
 				y += 1
+
+		elif direction == "down":
+			#transpose
+			self.squares = list(map(list, zip(*self.squares)))
+			#move right
+			self.move_in_direction("right")
+			#transpose back
+			self.squares = list(map(list, zip(*self.squares)))
+
 
 	#returns true if two squares have the same value
 	def same_value(self, position1, position2):
