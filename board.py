@@ -37,7 +37,7 @@ class Board(object):
 	def move_in_direction(self, direction):
 		"""
 		core algorithm: 
-		loop over row/column from side the row/column is moved towards (requires transposing or creating y_column for up/down)
+		loop over row/column from side the row/column is moved towards
 		if row is empty move to next
 		if the next square is empty, move all others by one and repeat on same square until not empty or row empty 
 		move through row, and repeat for all empty squares except empty end
@@ -56,7 +56,7 @@ class Board(object):
 					y += 1
 					continue
 
-				#loop over squares in row (except last)
+				#loop over squares in row from left to right
 				x = 0
 				for square in x_row:
 
@@ -94,10 +94,52 @@ class Board(object):
 			pass
 
 		elif direction == "right":
-			pass
+			#loop over rows
+			y = 0
+			for x_row in self.squares:
+				#jump to next row if empty
+				if  x_row == [0,0,0,0]:
+					y += 1
+					continue
 
-		elif direction == "left":
-			pass
+				#loop over squares in row from right to left
+				x = 3
+				for square in x_row[::-1]:
+
+					"""
+					if square is empty delete the list entry, append zero and repeat until not empty
+					break if all following squares are empty
+					NOTE: needs to use x_row[x] instead of square because both iterating and modifying list
+					"""
+					print("x_row: ",x_row,"x: ",x)
+					while x_row[x] == 0 and x >= 1:
+						print("delete loop starts")
+						#move to next x if all others also empty
+						rest_of_row_empty = True
+						for n in range(0, x)[::-1]:
+							print("n: ", n)
+							if not self.get_square((n,y)) == 0:
+								rest_of_row_empty = False
+						if rest_of_row_empty:
+								break
+
+						#move all others by one
+						del (self.squares[y][x])
+						print("BEFORE: ",self.squares[y])
+						self.squares[y].insert(0, 0)
+						print("AFTER: ",self.squares[y])
+					x -= 1
+
+				#repeat the loop over x-row after deleting empty
+				x = 3
+				for square in x_row[::-1]:
+					#if next square is the same, double it and contract the rest
+					if x >= 1 and x_row[x] == x_row[x-1]:
+						self.squares[y][x] *= 2
+						del(self.squares[y][x-1])
+						self.squares[y].insert(0, 0)
+					x -= 1
+				y += 1
 
 	#returns true if two squares have the same value
 	def same_value(self, position1, position2):
