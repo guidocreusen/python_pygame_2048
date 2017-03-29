@@ -39,7 +39,9 @@ class Board(object):
 		core algorithm: 
 		loop over row/column from side the row/column is moved towards (requires transposing or creating y_column for up/down)
 		if row is empty move to next
-		if the next square is empty, move all others by one and repeat on same square
+		if the next square is empty, move all others by one and repeat on same square until not empty or row empty 
+		move through row, and repeat for all empty squares except empty end
+		repeat loop over row
 		if the next square is the same, merge them and move all others behind by one
 		if the next square is non-empty non-identical, move to next square in loop
 		"""
@@ -58,11 +60,13 @@ class Board(object):
 				x = 0
 				for square in x_row:
 
-					#if square is empty delete, shift row and repeat until not empty
-					#break if all following squares are empty
-					#NOTE: needs to use x_row[x] instead of square because both iterating and modifying list
+					"""
+					if square is empty delete the list entry, append zero and repeat until not empty
+					break if all following squares are empty
+					NOTE: needs to use x_row[x] instead of square because both iterating and modifying list
+					"""
 					while x_row[x] == 0 and x <= 2:
-						#move to next row if all others also empty
+						#move to next x if all others also empty
 						rest_of_row_empty = True
 						for n in range(x+1, 4):
 							if not self.get_square((n,y)) == 0:
@@ -71,23 +75,19 @@ class Board(object):
 								break
 
 						#move all others by one
-						del (x_row[x])
-						x_row.append(0)
+						del (self.squares[y][x])
+						self.squares[y].append(0)
 					x += 1
 
+				#repeat the loop over x-row after deleting empty
 				x = 0
 				for square in x_row:
-					#merge squares if following quare is the same
+					#if next square is the same, double it and contract the rest
 					if x <= 2 and x_row[x] == x_row[x+1]:
 						self.squares[y][x] *= 2
 						del(self.squares[y][x+1])
 						self.squares[y].append(0)
 					x += 1
-
-					#if square is the same, double it and contract the rest
-
-					#if not the same, do nothing and move to next x in loop
-
 				y += 1
 
 		elif direction == "up":
