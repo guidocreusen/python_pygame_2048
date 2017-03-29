@@ -2,6 +2,7 @@
 import pygame
 from aaroundedrect import *
 import random
+import copy
 
 class Board(object):
 	#stores the squares value
@@ -34,6 +35,7 @@ class Board(object):
 	
 	#changes positions according to core game mechanism in a certain direction
 	#direction as string "up, down, left, right"
+	#returns True if squares moved, False if none moved
 	def move_in_direction(self, direction):
 		"""
 		core algorithm: 
@@ -47,6 +49,9 @@ class Board(object):
 
 		up/down movement transposes the nested lists, moves right (down) or left (up) and transposes them back
 		"""
+
+		#stores a deepcopy of the board to check if any square moved later
+		old_squares = copy.deepcopy(self.squares)
 
 		#case switch the direction parameter
 		if direction == "left":
@@ -151,6 +156,12 @@ class Board(object):
 			self.move_in_direction("right")
 			#transpose back
 			self.squares = list(map(list, zip(*self.squares)))
+
+		#compares the old deepcopy with the current board and returns if a square has moved
+		square_moved = False
+		if old_squares != self.squares:
+			square_moved = True
+		return square_moved
 
 
 	#returns true if two squares have the same value

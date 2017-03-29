@@ -30,17 +30,19 @@ while True:
 		sys.exit()
 	elif event.type == KEYDOWN:
 		if event.key ==  K_LEFT:
-			board.move_in_direction("left")
+			if board.move_in_direction("left"):
+				board.add_random_square()
 		elif event.key ==  K_RIGHT:
-			board.move_in_direction("right")
+			if board.move_in_direction("right"):
+				board.add_random_square()
 		elif event.key ==  K_UP:
-			board.move_in_direction("up")
+			if board.move_in_direction("up"):
+				board.add_random_square()
 		elif event.key ==  K_DOWN:
-			board.move_in_direction("down")
+			if board.move_in_direction("down"):
+				board.add_random_square()
 	else:
 		continue
-
-	board.add_random_square()
 
 	#draw bg
 	scr.fill((240,240,240))
