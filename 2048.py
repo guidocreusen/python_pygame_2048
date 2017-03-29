@@ -15,21 +15,7 @@ scr = pygame.display.set_mode(SCR_SIZE, 0, 32)
 scr.fill((240,240,240))
 
 board = Board()
-board.add_square(2, (0,0))
-board.add_square(4, (2,0))
-board.add_square(2, (3,0))
-
-board.add_square(2, (2,1))
-board.add_square(2, (3,1))
-
-board.add_square(4, (0,2))
-board.add_square(2, (2,2))
-board.add_square(2, (3,2))
-
-board.add_square(4, (0,3))
-board.add_square(4, (1,3))
-board.add_square(4, (2,3))
-board.add_square(4, (3,3))
+board.add_random_square()
 
 board.draw(scr, SCR_SIZE, MARGINS)
 
@@ -53,6 +39,8 @@ while True:
 			board.move_in_direction("down")
 	else:
 		continue
+
+	board.add_random_square()
 
 	#draw bg
 	scr.fill((240,240,240))
