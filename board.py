@@ -58,7 +58,9 @@ class Board(object):
 				x = 0
 				for square in x_row:
 
-					#if square is empty contract rest and repeat on same
+					#if square is empty delete, shift row and repeat until not empty
+					#break if all following squares are empty
+					#NOTE: needs to use x_row[x] instead of square because both iterating and modifying list
 					while x_row[x] == 0 and x <= 2:
 						#move to next row if all others also empty
 						rest_of_row_empty = True
@@ -71,9 +73,16 @@ class Board(object):
 						#move all others by one
 						del (x_row[x])
 						x_row.append(0)
-
 					x += 1
-					
+
+				x = 0
+				for square in x_row:
+					#merge squares if following quare is the same
+					if x <= 2 and x_row[x] == x_row[x+1]:
+						self.squares[y][x] *= 2
+						del(self.squares[y][x+1])
+						self.squares[y].append(0)
+					x += 1
 
 					#if square is the same, double it and contract the rest
 
@@ -117,6 +126,10 @@ class Board(object):
 		self.squares[random_pos[1]][random_pos[0]] = new_value
 
 		return True
+
+	#add specific value to position for debugging purposes
+	def add_square(self, value, position):
+		self.squares[position[1]][position[0]] = value
 
 	#draws the background, blits a surface with dimensions (size, size)
 	def draw_bg(self, surface, size, margins):
