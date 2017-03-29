@@ -24,11 +24,80 @@ class Board(object):
 	txt_color_light = (249,247,243)
 	txt_color_dark = (117, 109, 101)
 
+	#inits the board
 	def __init__(self):
 
 		#set all values to 0
 		for i in range(4):
-			self.squares.append([0, 0, 2, 4])
+			self.squares.append([0, 0, 0, 0])
+
+	
+	#changes positions when the game moves in a certain direction
+	#direction as string "up, down, left, right"
+	def move_in_direction(self, direction):
+		"""
+		core algorithm: 
+		loop over row/column from side the row/column is moved towards (requires transposing or creating y_column for up/down)
+		if row is empty move to next
+		if the next square is empty, move all others by one and repeat on same square
+		if the next square is the same, merge them and move all others behind by one
+		if the next square is non-empty non-identical, move to next square in loop
+		"""
+
+		#case switch the direction parameter
+		if direction == "left":
+			#loop over rows
+			y = 0
+			for x_row in self.squares:
+				#jump to next row if empty
+				if  x_row == [0,0,0,0]:
+					y += 1
+					continue
+
+				#loop over squares in row (except last)
+				x = 0
+				for square in x_row:
+
+					#if square is empty contract rest and repeat on same
+					while x_row[x] == 0 and x <= 2:
+						#move to next row if all others also empty
+						rest_of_row_empty = True
+						for n in range(x+1, 4):
+							if not self.get_square((n,y)) == 0:
+								rest_of_row_empty = False
+						if rest_of_row_empty:
+								break
+
+						#move all others by one
+						del (x_row[x])
+						x_row.append(0)
+
+					x += 1
+					
+
+					#if square is the same, double it and contract the rest
+
+					#if not the same, do nothing and move to next x in loop
+
+				y += 1
+
+		elif direction == "up":
+			pass
+
+		elif direction == "right":
+			pass
+
+		elif direction == "left":
+			pass
+
+	#returns true if two squares have the same value
+	def same_value(self, position1, position2):
+		return True if self.get_square(position1) == self.get_square(position2) else False
+
+	#returns the value of a square
+	def get_square(self, position):
+		return self.squares[position[1]][position[0]]
+
 
 	#adds a random value of either 2 or 4 on an empty square, returns false if no empty squares
 	def add_random_square(self):
@@ -38,10 +107,8 @@ class Board(object):
 		if not 0 in flatten_squares:
 			return False
 
-		#generate random pos until one is empty
+		#generate random pos until one is empty (if square value equals 0 while loop breaks)
 		random_pos = (random.randint(0,3), random.randint(0,3))
-
-		#loops until the square value is zero
 		while self.squares[random_pos[1]][random_pos[0]]:
 			random_pos = (random.randint(0,3), random.randint(0,3))
 

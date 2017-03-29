@@ -16,6 +16,7 @@ scr.fill((240,240,240))
 
 board = Board()
 board.add_random_square()
+board.add_random_square()
 board.draw(scr, SCR_SIZE, MARGINS)
 
 pygame.display.update()
@@ -27,7 +28,10 @@ while True:
 	event = pygame.event.wait()
 	if event.type == QUIT:
 		sys.exit()
-	elif not (event.type == KEYDOWN):
+	elif event.type == KEYDOWN:
+		if event.key ==  K_LEFT:
+			board.move_in_direction("left")
+	else:
 		continue
 
 	#draw bg
@@ -35,6 +39,5 @@ while True:
 
 	#draw board
 	board.draw(scr, SCR_SIZE, MARGINS)
-
 
 	pygame.display.update()
