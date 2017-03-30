@@ -72,7 +72,7 @@ class Board(object):
 					"""
 					if square is empty delete the list entry, append zero and repeat until not empty
 					break if all following squares are empty
-					NOTE: needs to use x_row[x] instead of square because both iterating and modifying list
+					NOTE: needs to use x_row[x] instead of square because iterating and modifying list at the same time
 					"""
 					while x_row[x] == 0 and x <= 2:
 						#move to next x if all others also empty
@@ -165,7 +165,6 @@ class Board(object):
 			square_moved = True
 		return square_moved
 
-
 	#returns true if two squares have the same value
 	def same_value(self, position1, position2):
 		return True if self.get_square(position1) == self.get_square(position2) else False
@@ -174,6 +173,17 @@ class Board(object):
 	def get_square(self, position):
 		return self.squares[position[1]][position[0]]
 
+	#returns true if the board is full and no further moves can be made, otherwise returns false
+	def game_over(self):
+		#deepcopy the board, move in all directions on the copied board and compare to original (after every move)
+		board_same = True
+		for direction in ["left", "up", "right", "down"]:
+			board_copy = copy.deepcopy(self)
+			board_copy.move_in_direction(direction)
+			if not board_copy.squares == self.squares:
+				board_same = False
+
+		return board_same
 
 	#adds a random value of either 2 or 4 on an empty square, returns false if no empty squares
 	def add_random_square(self):
