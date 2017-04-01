@@ -3,10 +3,10 @@ import pygame
 from aaroundedrect import *
 import random
 import copy
+from square import Square
+
 
 class Board(object):
-	#stores the squares value
-	squares = []
 
 	#color values
 	bg_color = (187, 173, 160)
@@ -29,10 +29,12 @@ class Board(object):
 
 	#inits the board
 	def __init__(self):
+		#stores the squares value
+		self.squares = []
 
 		#set all values to 0
 		for i in range(4):
-			self.squares.append([0, 0, 0, 0])
+			self.squares.append([Square(0,(0,i)), Square(0,(1,i)), Square(0,(2,i)), Square(0,(3,i))])
 
 	
 	#changes positions according to core game mechanism in a certain direction
@@ -60,42 +62,46 @@ class Board(object):
 			#loop over rows
 			y = 0
 			for x_row in self.squares:
-				#jump to next row if empty
-				if  x_row == [0,0,0,0]:
+				#jump to next row if empty (maybe remove later)
+				row_empty = True
+				for sq_obj in x_row:
+					if sq_obj.value != 0:
+						row_empty = False
+				if row_empty:
 					y += 1
 					continue
 
 				#loop over squares in row from left to right
 				x = 0
-				for square in x_row:
+				for sq_obj in x_row:
 
 					"""
 					if square is empty delete the list entry, append zero and repeat until not empty
 					break if all following squares are empty
 					NOTE: needs to use x_row[x] instead of square because iterating and modifying list at the same time
 					"""
-					while x_row[x] == 0 and x <= 2:
+					while x_row[x].value == 0 and x <= 2:
 						#move to next x if all others also empty
 						rest_of_row_empty = True
 						for n in range(x+1, 4):
-							if not self.get_square((n,y)) == 0:
+							if not self.get_square((n,y)).value == 0:
 								rest_of_row_empty = False
 						if rest_of_row_empty:
 								break
 
 						#move all others by one
 						del (self.squares[y][x])
-						self.squares[y].append(0)
+						self.squares[y].append(Square(0,(x,y)))
 					x += 1
 
 				#repeat the loop over x-row after deleting empty
 				x = 0
-				for square in x_row:
+				for sq_obj in x_row:
 					#if next square is the same, double it and contract the rest
-					if x <= 2 and x_row[x] == x_row[x+1]:
-						self.squares[y][x] *= 2
+					if x <= 2 and x_row[x].value == x_row[x+1].value:
+						self.squares[y][x].value *= 2
 						del(self.squares[y][x+1])
-						self.squares[y].append(0)
+						self.squares[y].append(Square(0, (x,y)))
 					x += 1
 				y += 1
 
@@ -112,42 +118,46 @@ class Board(object):
 			#loop over rows
 			y = 0
 			for x_row in self.squares:
-				#jump to next row if empty
-				if  x_row == [0,0,0,0]:
+				#jump to next row if empty (maybe remove later)
+				row_empty = True
+				for sq_obj in x_row:
+					if sq_obj.value != 0:
+						row_empty = False
+				if row_empty:
 					y += 1
 					continue
 
 				#loop over squares in row from right to left
 				x = 3
-				for square in x_row[::-1]:
+				for sq_obj in x_row[::-1]:
 
 					"""
 					if square is empty delete the list entry, append zero and repeat until not empty
 					break if all following squares are empty
 					NOTE: needs to use x_row[x] instead of square because both iterating and modifying list
 					"""
-					while x_row[x] == 0 and x >= 1:
+					while x_row[x].value == 0 and x >= 1:
 						#move to next x if all others also empty
 						rest_of_row_empty = True
 						for n in range(0, x)[::-1]:
-							if not self.get_square((n,y)) == 0:
+							if not self.get_square((n,y)).value == 0:
 								rest_of_row_empty = False
 						if rest_of_row_empty:
 								break
 
 						#move all others by one
 						del (self.squares[y][x])
-						self.squares[y].insert(0, 0)
+						self.squares[y].insert(0, Square(0,(x,y)))
 					x -= 1
 
 				#repeat the loop over x-row after deleting empty
 				x = 3
-				for square in x_row[::-1]:
+				for sq_obj in x_row[::-1]:
 					#if next square is the same, double it and contract the rest
-					if x >= 1 and x_row[x] == x_row[x-1]:
-						self.squares[y][x] *= 2
+					if x >= 1 and x_row[x].value == x_row[x-1].value:
+						self.squares[y][x].value *= 2
 						del(self.squares[y][x-1])
-						self.squares[y].insert(0, 0)
+						self.squares[y].insert(0, Square(0, (x,y)))
 					x -= 1
 				y += 1
 
@@ -161,13 +171,15 @@ class Board(object):
 
 		#compares the old deepcopy with the current board and returns if a square has moved
 		square_moved = False
-		if old_squares != self.squares:
+		old_square_values_flattened = [item.value for row in old_squares for item in row]
+		new_square_values_flattened = [item.value for row in self.squares for item in row]
+		if old_square_values_flattened != new_square_values_flattened:
 			square_moved = True
 		return square_moved
 
 	#returns true if two squares have the same value
 	def same_value(self, position1, position2):
-		return True if self.get_square(position1) == self.get_square(position2) else False
+		return True if self.get_square(position1).value == self.get_square(position2).value else False
 
 	#returns the value of a square
 	def get_square(self, position):
@@ -180,33 +192,35 @@ class Board(object):
 		for direction in ["left", "up", "right", "down"]:
 			board_copy = copy.deepcopy(self)
 			board_copy.move_in_direction(direction)
-			if not board_copy.squares == self.squares:
+			#repeated code, move into seperate function later
+			old_square_values_flattened = [item.value for row in board_copy.squares for item in row]
+			new_square_values_flattened = [item.value for row in self.squares for item in row]
+			if (old_square_values_flattened != new_square_values_flattened):
 				board_same = False
-
 		return board_same
 
 	#adds a random value of either 2 or 4 on an empty square, returns false if no empty squares
 	def add_random_square(self):
 		#return false if none empty (flatten array)
-		flatten_squares = [item for sublist in self.squares for item in sublist]
+		flatten_squares = [item.value for sublist in self.squares for item in sublist]
 
 		if not 0 in flatten_squares:
 			return False
 
 		#generate random pos until one is empty (if square value equals 0 while loop breaks)
 		random_pos = (random.randint(0,3), random.randint(0,3))
-		while self.squares[random_pos[1]][random_pos[0]]:
+		while self.squares[random_pos[1]][random_pos[0]].value:
 			random_pos = (random.randint(0,3), random.randint(0,3))
 
 		#add either 2 or 4, with a ration of 4 : 1
 		new_value = random.choice((2,2,2,2,4))
-		self.squares[random_pos[1]][random_pos[0]] = new_value
+		self.squares[random_pos[1]][random_pos[0]].value = new_value
 
 		return True
 
 	#add specific value to position for debugging purposes
 	def add_square(self, value, position):
-		self.squares[position[1]][position[0]] = value
+		self.squares[position[1]][position[0]].value = value
 
 	#draws the background, blits a surface with dimensions (size, size)
 	def draw_bg(self, surface, size, margins):
@@ -228,18 +242,18 @@ class Board(object):
 			#start drawing at x_margin (mult. empirical factor!) + left border width
 			draw_x = (margins[0]*0.955)+size[0]*0.03
 			#draw the squares
-			for square in x_row:
+			for sq_obj in x_row:
 				#generate a Rect object of the right proportions (later converted to roundrect surface)
 				square_rect = pygame.Rect(0,0, 0.2125*(size[0]-2*margins[0]), 0.2125*(size[1]-2*margins[1]))
-				square_rounded = AAfilledRoundedRect(square_rect, self.colors[square], 0.1)
+				square_rounded = AAfilledRoundedRect(square_rect, self.colors[sq_obj.value], 0.1)
 				surface.blit(square_rounded, (draw_x, draw_y))
 				
 				#draw text of value if square is not 0
-				if square:
+				if sq_obj.value:
 					#create and blit font surface
 					font = pygame.font.SysFont("bold", int(size[1]/12))
-					txt_color = self.txt_color_dark if (square <= 4) else self.txt_color_light
-					txt_surface = font.render(str(square), True, txt_color)
+					txt_color = self.txt_color_dark if (sq_obj.value <= 4) else self.txt_color_light
+					txt_surface = font.render(str(sq_obj.value), True, txt_color)
 					txt_x = draw_x+(0.2125*(size[0]-2*margins[0]))/2-0.5*txt_surface.get_width()
 					txt_y = draw_y+(0.2125*(size[1]-2*margins[1]))/2-0.5*txt_surface.get_height()
 					surface.blit(txt_surface, (txt_x, txt_y))
