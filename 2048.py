@@ -16,6 +16,8 @@ scr.fill((240,240,240))
 
 board = Board()
 board.add_random_square()
+board.add_random_square()
+
 key_bindings = {
 	K_LEFT: "left",
 	K_RIGHT: "right",
@@ -23,6 +25,7 @@ key_bindings = {
 	K_DOWN: "down"
 }
 
+board.update_squares_position()
 board.draw(scr, SCR_SIZE, MARGINS)
 
 pygame.display.update()

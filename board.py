@@ -169,6 +169,9 @@ class Board(object):
 			#transpose back
 			self.squares = list(map(list, zip(*self.squares)))
 
+		#update the position for each square
+		self.update_squares_position()
+
 		#compares the old deepcopy with the current board and returns if a square has moved
 		square_moved = False
 		old_square_values_flattened = [item.value for row in old_squares for item in row]
@@ -176,6 +179,12 @@ class Board(object):
 		if old_square_values_flattened != new_square_values_flattened:
 			square_moved = True
 		return square_moved
+
+	#updates the x,y position for the square objects 
+	def update_squares_position(self):
+		for y,x_row in enumerate(self.squares):
+			for x,square in enumerate(x_row):
+				square.pos = (x,y)
 
 	#returns true if two squares have the same value
 	def same_value(self, position1, position2):
@@ -234,15 +243,11 @@ class Board(object):
 		#distribute space: 5 x 4% empty, 4 x 20% square
 		
 		#iterate over board
-		#start drawing at y_margin (mult. empirical factor!) + top border width
-		draw_y = (margins[1]*0.955)+size[1]*0.03
 		for x_row in self.squares:
-			
-
-			#start drawing at x_margin (mult. empirical factor!) + left border width
-			draw_x = (margins[0]*0.955)+size[0]*0.03
-			#draw the squares
 			for sq_obj in x_row:
+				#get the draw positions from the square object
+				draw_x, draw_y = sq_obj.get_draw_pos(margins, size)
+
 				#generate a Rect object of the right proportions (later converted to roundrect surface)
 				square_rect = pygame.Rect(0,0, 0.2125*(size[0]-2*margins[0]), 0.2125*(size[1]-2*margins[1]))
 				square_rounded = AAfilledRoundedRect(square_rect, self.colors[sq_obj.value], 0.1)
@@ -254,13 +259,8 @@ class Board(object):
 					font = pygame.font.SysFont("bold", int(size[1]/12))
 					txt_color = self.txt_color_dark if (sq_obj.value <= 4) else self.txt_color_light
 					txt_surface = font.render(str(sq_obj.value), True, txt_color)
-					txt_x = draw_x+(0.2125*(size[0]-2*margins[0]))/2-0.5*txt_surface.get_width()
-					txt_y = draw_y+(0.2125*(size[1]-2*margins[1]))/2-0.5*txt_surface.get_height()
-					surface.blit(txt_surface, (txt_x, txt_y))
-
-				draw_x += 0.2425*(size[0]-2*margins[0])
-
-			draw_y += 0.2425*(size[1]-2*margins[1])
+					txt_pos = sq_obj.get_text_draw_pos(margins, size, txt_surface)
+					surface.blit(txt_surface, txt_pos)
 
 	#draws the entire board, by first drawing bg then squares
 	def draw(self, surface, size, margins):
