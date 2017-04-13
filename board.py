@@ -169,9 +169,6 @@ class Board(object):
 			#transpose back
 			self.squares = list(map(list, zip(*self.squares)))
 
-		#update the position for each square
-		self.update_squares_position()
-
 		#compares the old deepcopy with the current board and returns if a square has moved
 		square_moved = False
 		old_square_values_flattened = [item.value for row in old_squares for item in row]
@@ -180,10 +177,11 @@ class Board(object):
 			square_moved = True
 		return square_moved
 
-	#updates the x,y position for the square objects 
+	#updates the x,y position and previous position for the square objects 
 	def update_squares_position(self):
 		for y,x_row in enumerate(self.squares):
 			for x,square in enumerate(x_row):
+				square.previous_pos = square.pos
 				square.pos = (x,y)
 
 	#returns true if two squares have the same value
@@ -267,3 +265,16 @@ class Board(object):
 		self.draw_bg(surface, size, margins)
 		self.draw_squares(surface, size, margins)
 
+	"""
+	The part below includes the methods for animating the movement
+	still highly experimental
+
+	Algorithm:
+	- get the previous position and current position for a square
+	- if the previous position is "False" or equal to current skip the square
+	- for animation_time loop the animation
+	- normalize the movement over the animation time
+	- update draw_x for the square on each loop
+	- draw the board with the temporary intermediate draw_pos
+
+	"""

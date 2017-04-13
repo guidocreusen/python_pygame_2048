@@ -25,7 +25,6 @@ key_bindings = {
 	K_DOWN: "down"
 }
 
-board.update_squares_position()
 board.draw(scr, SCR_SIZE, MARGINS)
 
 pygame.display.update()
@@ -74,7 +73,8 @@ while True:
 		#if a valid move is made add a square
 		if event.key in key_bindings:
 			if board.move_in_direction(key_bindings[event.key]):
-				board.add_random_square()			
+				board.add_random_square()	
+				board.update_squares_position()		
 	else:
 		continue
 

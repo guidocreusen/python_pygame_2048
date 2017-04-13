@@ -4,6 +4,7 @@ class Square(object):
 	def __init__(self, value, position):
 		self.value = value
 		self.pos = position
+		self.previous_pos = False
 
 	#returns the exact x,y coordinates for drawing
 	def get_draw_pos(self, margins, scr_size):
