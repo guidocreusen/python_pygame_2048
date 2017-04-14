@@ -5,7 +5,6 @@ import random
 import copy
 from square import Square
 
-
 class Board(object):
 
 	#color values
@@ -183,6 +182,7 @@ class Board(object):
 			for x,square in enumerate(x_row):
 				square.previous_pos = square.pos
 				square.pos = (x,y)
+		self.animate_squares()
 
 	#returns true if two squares have the same value
 	def same_value(self, position1, position2):
@@ -264,17 +264,31 @@ class Board(object):
 	def draw(self, surface, size, margins):
 		self.draw_bg(surface, size, margins)
 		self.draw_squares(surface, size, margins)
+	
 
 	"""
 	The part below includes the methods for animating the movement
 	still highly experimental
-
+	
 	Algorithm:
 	- get the previous position and current position for a square
-	- if the previous position is "False" or equal to current skip the square
 	- for animation_time loop the animation
+	- if the previous position is "False" or equal to current skip the square
 	- normalize the movement over the animation time
 	- update draw_x for the square on each loop
 	- draw the board with the temporary intermediate draw_pos
 
 	"""
+	def animate_squares(self):
+		#animation time in ms, framerate in 1/s
+		animation_time = 1000
+		framerate = 120
+
+		#initialize the animation
+		time_elapsed = 0
+		clock = pygame.time.Clock()
+
+		while time_elapsed < animation_time:
+			dt = clock.tick(framerate)
+			print("dt: ",dt,"time_elapsed: ",time_elapsed)
+			time_elapsed += dt
