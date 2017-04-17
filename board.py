@@ -233,8 +233,16 @@ class Board(object):
 	def draw_bg(self, surface, size, margins):
 		bg_rect = pygame.Rect(0, 0, size[0]-2*margins[0], size[1]-2*margins[1])
 		bg_rounded = AAfilledRoundedRect(bg_rect, self.bg_color, 0.04)
+		surface.blit(bg_rounded, (margins[0], margins[1]))
 
-		return surface.blit(bg_rounded, (margins[0], margins[1]))
+		#draw empty squares
+		for y in [0,1,2,3]:
+			for x in [0,1,2,3]:
+				draw_x = (margins[0]*0.955)+size[0]*0.03 + x*(0.2425*(size[0]-2*margins[0]))
+				draw_y = (margins[1]*0.955)+size[1]*0.03 + y*(0.2425*(size[1]-2*margins[1]))
+				square_rect = pygame.Rect(0,0, 0.2125*(size[0]-2*margins[0]), 0.2125*(size[1]-2*margins[1]))
+				square_rounded = AAfilledRoundedRect(square_rect, self.colors[0], 0.1)
+				surface.blit(square_rounded, (draw_x, draw_y))
 
 	#draw the squares which make up the board
 	def draw_squares(self, surface, size, margins):
@@ -248,14 +256,13 @@ class Board(object):
 				x,y = sq_obj.pos
 				draw_x = (margins[0]*0.955)+size[0]*0.03 + x*(0.2425*(size[0]-2*margins[0]))
 				draw_y = (margins[1]*0.955)+size[1]*0.03 + y*(0.2425*(size[1]-2*margins[1]))
-
-				#generate a Rect object of the right proportions (later converted to roundrect surface)
-				square_rect = pygame.Rect(0,0, 0.2125*(size[0]-2*margins[0]), 0.2125*(size[1]-2*margins[1]))
-				square_rounded = AAfilledRoundedRect(square_rect, self.colors[sq_obj.value], 0.1)
-				surface.blit(square_rounded, (draw_x, draw_y))
 				
-				#draw text of value if square is not 0
+				#draw square and text if square value is not 0
 				if sq_obj.value:
+					#generate a Rect object of the right proportions (later converted to roundrect surface)
+					square_rect = pygame.Rect(0,0, 0.2125*(size[0]-2*margins[0]), 0.2125*(size[1]-2*margins[1]))
+					square_rounded = AAfilledRoundedRect(square_rect, self.colors[sq_obj.value], 0.1)
+					surface.blit(square_rounded, (draw_x, draw_y))
 					#create and blit font surface
 					font = pygame.font.SysFont("bold", int(size[1]/12))
 					txt_color = self.txt_color_dark if (sq_obj.value <= 4) else self.txt_color_light
