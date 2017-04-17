@@ -182,6 +182,8 @@ class Board(object):
 			for x,square in enumerate(x_row):
 				square.previous_pos = square.pos
 				square.pos = (x,y)
+				if square.value == 0:
+					square.previous_pos = (x,y)
 		self.animate_squares(surface, scr_size, margins)
 
 	#returns true if two squares have the same value
@@ -222,6 +224,8 @@ class Board(object):
 		#add either 2 or 4, with a ration of 4 : 1
 		new_value = random.choice((2,2,2,2,4))
 		self.squares[random_pos[1]][random_pos[0]].value = new_value
+		#set the previous position to the current one
+		self.squares[random_pos[1]][random_pos[0]].previous_pos = (random_pos[0],random_pos[1])
 
 		return True
 
@@ -292,8 +296,8 @@ class Board(object):
 	"""
 	def animate_squares(self, surface, scr_size, margins):
 		#animation time in ms, framerate in 1/s
-		animation_time = 1000
-		framerate = 30
+		animation_time = 50
+		framerate = 100
 
 		#flatten the square objects nested array
 		squares_flattened = [square for row in self.squares for square in row]
@@ -301,19 +305,21 @@ class Board(object):
 		squares_flattened_old_pos = [square.previous_pos for square in squares_flattened_copy]
 		squares_flattened_new_pos = [square.pos for square in squares_flattened_copy]
 
+
 		#initialize the animation
 		time_elapsed = 0
 		clock = pygame.time.Clock()
 
 		while time_elapsed < animation_time:
 			dt = clock.tick(framerate)
-			time_elapsed += dt
 			animation_progress = time_elapsed/animation_time
 
 			#iterate over flattened squares and interpolate position from copied square values
 			for index, square in enumerate(squares_flattened):
 				if square.value != 0:
 					square.pos = (squares_flattened_old_pos[index][0]+(squares_flattened_new_pos[index][0]-squares_flattened_old_pos[index][0])*animation_progress, squares_flattened_old_pos[index][1]+(squares_flattened_new_pos[index][1]-squares_flattened_old_pos[index][1])*animation_progress)
+
+			time_elapsed += dt
 
 			self.draw(surface, scr_size, margins)
 			pygame.display.update()

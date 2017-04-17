@@ -73,8 +73,8 @@ while True:
 		#if a valid move is made add a square
 		if event.key in key_bindings:
 			if board.move_in_direction(key_bindings[event.key]):
-				board.add_random_square()	
 				board.update_squares_position(scr, SCR_SIZE, MARGINS)		
+				board.add_random_square()
 	else:
 		continue
 
