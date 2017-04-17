@@ -6,16 +6,6 @@ class Square(object):
 		self.pos = position
 		self.previous_pos = False
 
-	#returns the exact x,y coordinates for drawing
-	def get_draw_pos(self, margins, scr_size):
-		x,y = self.pos
-		#start drawing at y_margin (mult. empirical factor!) + top border width
-		#start drawing at x_margin (mult. empirical factor!) + left border width
-		draw_x = (margins[0]*0.955)+scr_size[0]*0.03 + x*(0.2425*(scr_size[0]-2*margins[0]))
-		draw_y = (margins[1]*0.955)+scr_size[1]*0.03 + y*(0.2425*(scr_size[1]-2*margins[1]))
-
-		return (draw_x, draw_y)
-
 	#returns the position for the font to be drawn
 	def get_text_draw_pos(self, margins, scr_size, txt_surface):
 		draw_x, draw_y = self.get_draw_pos(margins, scr_size)

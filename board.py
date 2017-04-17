@@ -244,7 +244,10 @@ class Board(object):
 		for x_row in self.squares:
 			for sq_obj in x_row:
 				#get the draw positions from the square object
-				draw_x, draw_y = sq_obj.get_draw_pos(margins, size)
+				#start drawing at margin (mult. empirical factor!) + border width
+				x,y = sq_obj.pos
+				draw_x = (margins[0]*0.955)+size[0]*0.03 + x*(0.2425*(size[0]-2*margins[0]))
+				draw_y = (margins[1]*0.955)+size[1]*0.03 + y*(0.2425*(size[1]-2*margins[1]))
 
 				#generate a Rect object of the right proportions (later converted to roundrect surface)
 				square_rect = pygame.Rect(0,0, 0.2125*(size[0]-2*margins[0]), 0.2125*(size[1]-2*margins[1]))
@@ -257,8 +260,9 @@ class Board(object):
 					font = pygame.font.SysFont("bold", int(size[1]/12))
 					txt_color = self.txt_color_dark if (sq_obj.value <= 4) else self.txt_color_light
 					txt_surface = font.render(str(sq_obj.value), True, txt_color)
-					txt_pos = sq_obj.get_text_draw_pos(margins, size, txt_surface)
-					surface.blit(txt_surface, txt_pos)
+					txt_x = draw_x+(0.2125*(size[0]-2*margins[0]))/2-0.5*txt_surface.get_width()
+					txt_y = draw_y+(0.2125*(size[1]-2*margins[1]))/2-0.5*txt_surface.get_height()
+					surface.blit(txt_surface, (txt_x, txt_y))
 
 	#draws the entire board, by first drawing bg then squares
 	def draw(self, surface, size, margins):
