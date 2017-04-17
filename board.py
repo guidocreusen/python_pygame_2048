@@ -177,12 +177,12 @@ class Board(object):
 		return square_moved
 
 	#updates the x,y position and previous position for the square objects 
-	def update_squares_position(self):
+	def update_squares_position(self, surface, scr_size, margins):
 		for y,x_row in enumerate(self.squares):
 			for x,square in enumerate(x_row):
 				square.previous_pos = square.pos
 				square.pos = (x,y)
-		self.animate_squares()
+		self.animate_squares(surface, scr_size, margins)
 
 	#returns true if two squares have the same value
 	def same_value(self, position1, position2):
@@ -279,10 +279,16 @@ class Board(object):
 	- draw the board with the temporary intermediate draw_pos
 
 	"""
-	def animate_squares(self):
+	def animate_squares(self, surface, scr_size, margins):
 		#animation time in ms, framerate in 1/s
 		animation_time = 1000
-		framerate = 120
+		framerate = 30
+
+		#flatten the square objects nested array
+		squares_flattened = [square for row in self.squares for square in row]
+		squares_flattened_copy = [square for row in copy.deepcopy(self.squares) for square in row]
+		squares_flattened_old_pos = [square.previous_pos for square in squares_flattened_copy]
+		squares_flattened_new_pos = [square.pos for square in squares_flattened_copy]
 
 		#initialize the animation
 		time_elapsed = 0
@@ -290,5 +296,17 @@ class Board(object):
 
 		while time_elapsed < animation_time:
 			dt = clock.tick(framerate)
-			print("dt: ",dt,"time_elapsed: ",time_elapsed)
 			time_elapsed += dt
+			animation_progress = time_elapsed/animation_time
+
+			#iterate over flattened squares and interpolate position from copied square values
+			for index, square in enumerate(squares_flattened):
+				if square.value != 0:
+					square.pos = (squares_flattened_old_pos[index][0]+(squares_flattened_new_pos[index][0]-squares_flattened_old_pos[index][0])*animation_progress, squares_flattened_old_pos[index][1]+(squares_flattened_new_pos[index][1]-squares_flattened_old_pos[index][1])*animation_progress)
+
+			self.draw(surface, scr_size, margins)
+			pygame.display.update()
+
+		#after animation fix square positions as animation causes small deviation
+		for index, square in enumerate(squares_flattened):
+			square.pos = (squares_flattened_new_pos[index][0], squares_flattened_new_pos[index][1])
