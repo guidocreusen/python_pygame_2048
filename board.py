@@ -27,18 +27,20 @@ class Board(object):
 	txt_color_dark = (117, 109, 101)
 
 	#inits the board
-	def __init__(self):
-		#stores the squares value
-		self.squares = []
+	def __init__(self, scr_size, margins):
+		#board is initialized with scr_size and margin attributes
+		self.scr_size = scr_size
+		self.margins = margins
 
-		#set all values to 0
+		#creates the 4x4 squares grid as a 2D list
+		self.squares = []
 		for i in range(4):
 			self.squares.append([Square(0,(0,i)), Square(0,(1,i)), Square(0,(2,i)), Square(0,(3,i))])
 
 	
 	#changes positions according to core game mechanism in a certain direction
-	#direction as string "up, down, left, right"
-	#returns True if squares moved, False if none moved
+	#direction as string "up, down, left, right" (keys bindings in 2048.py)
+	#returns True if squares moved, False if none moved which is checked by deepcopying the board
 	def move_in_direction(self, direction):
 		"""
 		core algorithm: 
@@ -177,14 +179,20 @@ class Board(object):
 		return square_moved
 
 	#updates the x,y position and previous position for the square objects 
-	def update_squares_position(self, surface, scr_size, margins):
+	#triggers the animation for the movement
+	def update_squares_position(self, surface):
+		#iterate over squares
 		for y,x_row in enumerate(self.squares):
 			for x,square in enumerate(x_row):
+				#store the last position of the square in the according attribute
 				square.previous_pos = square.pos
 				square.pos = (x,y)
+				#for empty squares the previous position is the current position
+				#this is necessary because the "move_in_direction" method deletes and moves empty square objects
 				if square.value == 0:
 					square.previous_pos = (x,y)
-		self.animate_squares(surface, scr_size, margins)
+
+		self.animate_squares(surface)
 
 	#returns true if two squares have the same value
 	def same_value(self, position1, position2):
@@ -233,23 +241,23 @@ class Board(object):
 	def add_square(self, value, position):
 		self.squares[position[1]][position[0]].value = value
 
-	#draws the background, blits a surface with dimensions (size, size)
-	def draw_bg(self, surface, size, margins):
-		bg_rect = pygame.Rect(0, 0, size[0]-2*margins[0], size[1]-2*margins[1])
+	#draws the background, blits a surface with dimensions (scr_size)
+	def draw_bg(self, surface):
+		bg_rect = pygame.Rect(0, 0, self.scr_size[0]-2*self.margins[0], self.scr_size[1]-2*self.margins[1])
 		bg_rounded = AAfilledRoundedRect(bg_rect, self.bg_color, 0.04)
-		surface.blit(bg_rounded, (margins[0], margins[1]))
+		surface.blit(bg_rounded, (self.margins[0], self.margins[1]))
 
 		#draw empty squares
 		for y in [0,1,2,3]:
 			for x in [0,1,2,3]:
-				draw_x = (margins[0]*0.955)+size[0]*0.03 + x*(0.2425*(size[0]-2*margins[0]))
-				draw_y = (margins[1]*0.955)+size[1]*0.03 + y*(0.2425*(size[1]-2*margins[1]))
-				square_rect = pygame.Rect(0,0, 0.2125*(size[0]-2*margins[0]), 0.2125*(size[1]-2*margins[1]))
+				draw_x = (self.margins[0]*0.955)+self.scr_size[0]*0.03 + x*(0.2425*(self.scr_size[0]-2*self.margins[0]))
+				draw_y = (self.margins[1]*0.955)+self.scr_size[1]*0.03 + y*(0.2425*(self.scr_size[1]-2*self.margins[1]))
+				square_rect = pygame.Rect(0,0, 0.2125*(self.scr_size[0]-2*self.margins[0]), 0.2125*(self.scr_size[1]-2*self.margins[1]))
 				square_rounded = AAfilledRoundedRect(square_rect, self.colors[0], 0.1)
 				surface.blit(square_rounded, (draw_x, draw_y))
 
 	#draw the squares which make up the board
-	def draw_squares(self, surface, size, margins):
+	def draw_squares(self, surface):
 		#distribute space: 5 x 4% empty, 4 x 20% square
 		
 		#iterate over board
@@ -258,27 +266,27 @@ class Board(object):
 				#get the draw positions from the square object
 				#start drawing at margin (mult. empirical factor!) + border width
 				x,y = sq_obj.pos
-				draw_x = (margins[0]*0.955)+size[0]*0.03 + x*(0.2425*(size[0]-2*margins[0]))
-				draw_y = (margins[1]*0.955)+size[1]*0.03 + y*(0.2425*(size[1]-2*margins[1]))
+				draw_x = (self.margins[0]*0.955)+self.scr_size[0]*0.03 + x*(0.2425*(self.scr_size[0]-2*self.margins[0]))
+				draw_y = (self.margins[1]*0.955)+self.scr_size[1]*0.03 + y*(0.2425*(self.scr_size[1]-2*self.margins[1]))
 				
 				#draw square and text if square value is not 0
 				if sq_obj.value:
 					#generate a Rect object of the right proportions (later converted to roundrect surface)
-					square_rect = pygame.Rect(0,0, 0.2125*(size[0]-2*margins[0]), 0.2125*(size[1]-2*margins[1]))
+					square_rect = pygame.Rect(0,0, 0.2125*(self.scr_size[0]-2*self.margins[0]), 0.2125*(self.scr_size[1]-2*self.margins[1]))
 					square_rounded = AAfilledRoundedRect(square_rect, self.colors[sq_obj.value], 0.1)
 					surface.blit(square_rounded, (draw_x, draw_y))
 					#create and blit font surface
-					font = pygame.font.SysFont("bold", int(size[1]/12))
+					font = pygame.font.SysFont("bold", int(self.scr_size[1]/12))
 					txt_color = self.txt_color_dark if (sq_obj.value <= 4) else self.txt_color_light
 					txt_surface = font.render(str(sq_obj.value), True, txt_color)
-					txt_x = draw_x+(0.2125*(size[0]-2*margins[0]))/2-0.5*txt_surface.get_width()
-					txt_y = draw_y+(0.2125*(size[1]-2*margins[1]))/2-0.5*txt_surface.get_height()
+					txt_x = draw_x+(0.2125*(self.scr_size[0]-2*self.margins[0]))/2-0.5*txt_surface.get_width()
+					txt_y = draw_y+(0.2125*(self.scr_size[1]-2*self.margins[1]))/2-0.5*txt_surface.get_height()
 					surface.blit(txt_surface, (txt_x, txt_y))
 
 	#draws the entire board, by first drawing bg then squares
-	def draw(self, surface, size, margins):
-		self.draw_bg(surface, size, margins)
-		self.draw_squares(surface, size, margins)
+	def draw(self, surface):
+		self.draw_bg(surface)
+		self.draw_squares(surface)
 	
 
 	"""
@@ -294,7 +302,7 @@ class Board(object):
 	- draw the board with the temporary intermediate draw_pos
 
 	"""
-	def animate_squares(self, surface, scr_size, margins):
+	def animate_squares(self, surface):
 		#animation time in ms, framerate in 1/s
 		animation_time = 50
 		framerate = 100
@@ -321,7 +329,7 @@ class Board(object):
 
 			time_elapsed += dt
 
-			self.draw(surface, scr_size, margins)
+			self.draw(surface)
 			pygame.display.update()
 
 		#after animation fix square positions as animation causes small deviation

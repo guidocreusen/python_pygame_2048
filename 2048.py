@@ -14,7 +14,7 @@ pygame.init()
 scr = pygame.display.set_mode(SCR_SIZE, 0, 32)
 scr.fill((240,240,240))
 
-board = Board()
+board = Board(SCR_SIZE, MARGINS)
 board.add_random_square()
 board.add_random_square()
 
@@ -25,13 +25,13 @@ key_bindings = {
 	K_DOWN: "down"
 }
 
-board.draw(scr, SCR_SIZE, MARGINS)
+board.draw(scr)
 
 pygame.display.update()
 
 #shows the game over message
 def game_over():
-	board.draw(scr, SCR_SIZE, MARGINS)
+	board.draw(scr)
 	overlay = pygame.Surface((SCR_SIZE[0], SCR_SIZE[1]), pygame.SRCALPHA)
 	overlay.fill((20,20,20,200))
 	scr.blit(overlay, (0,0))
@@ -73,7 +73,7 @@ while True:
 		#if a valid move is made add a square
 		if event.key in key_bindings:
 			if board.move_in_direction(key_bindings[event.key]):
-				board.update_squares_position(scr, SCR_SIZE, MARGINS)		
+				board.update_squares_position(scr)		
 				board.add_random_square()
 	else:
 		continue
@@ -84,6 +84,6 @@ while True:
 
 	#draw bg and board
 	scr.fill((240,240,240))
-	board.draw(scr, SCR_SIZE, MARGINS)
+	board.draw(scr)
 
 	pygame.display.update()
