@@ -173,7 +173,7 @@ class Board(object):
 				if square.value == 0:
 					square.previous_pos = (x,y)
 
-		self.animate_squares(self.surface)
+		self.animate_squares()
 
 	#returns true if two squares have the same value
 	def same_value(self, position1, position2):
@@ -285,7 +285,7 @@ class Board(object):
 	- draw the board with the temporary intermediate draw_pos
 
 	"""
-	def animate_squares(self, surface):
+	def animate_squares(self):
 		#animation time in ms, framerate in 1/s
 		animation_time = 50
 		framerate = 100
