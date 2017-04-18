@@ -4,4 +4,4 @@ class Square(object):
 	def __init__(self, value, position):
 		self.value = value
 		self.pos = position
-		self.previous_pos = False
+		self.previous_pos = position

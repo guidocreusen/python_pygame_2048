@@ -29,15 +29,19 @@ class Board(object):
 	}
 
 	#inits the board with surface to draw to and scr_size and margin attributes
+	#has attributes for Pygame font and rect surface as these otherwise need to be generated frequently
 	#creates a 4x4 grid and fills it with square objects with value 0
 	def __init__(self, surface, scr_size, margins):
 		self.surface = surface
 		self.scr_size = scr_size
 		self.margins = margins
+		self.font = pygame.font.SysFont("bold", int(scr_size[1]/12))
+		self.square_rect = pygame.Rect(0,0, 0.2125*(scr_size[0]-2*margins[0]), 0.2125*(scr_size[1]-2*margins[1]))
+		self.rounded_empty_square = AAfilledRoundedRect(self.square_rect, self.square_colors[0], 0.1)
 
 		#creates the 4x4 squares grid as a 2D list
 		self.squares = []
-		for i in range(4):
+		for i in [0,1,2,3]:
 			self.squares.append([Square(0,(0,i)), Square(0,(1,i)), Square(0,(2,i)), Square(0,(3,i))])
 	
 	#changes positions according to core game mechanism in a certain direction
@@ -187,7 +191,6 @@ class Board(object):
 	def game_over(self):
 		#deepcopy the board squares, move in all directions on the copied board and compare to original (after every move)
 		#NOTE: cannot deepcopy board directly because it has a Pyame surface as attribute which cannot be deepcopied
-		board_same = True
 		for direction in ["left", "up", "right", "down"]:
 			board_copy = Board(self.surface, self.scr_size, self.margins)
 			board_copy.squares = copy.deepcopy(self.squares)
@@ -196,15 +199,13 @@ class Board(object):
 			old_square_values_flattened = [item.value for row in board_copy.squares for item in row]
 			new_square_values_flattened = [item.value for row in self.squares for item in row]
 			if (old_square_values_flattened != new_square_values_flattened):
-				board_same = False
-		return board_same
+				return False
+		return True
 
-	#adds a random value of either 2 or 4 on an empty square, returns false if no empty squares
+	#adds a random value of either 2 or 4 on an empty square, returns False if no empty squares otherwise True
 	def add_random_square(self):
-		#return false if none empty (flatten array)
-		flatten_squares = [item.value for sublist in self.squares for item in sublist]
-
-		if not 0 in flatten_squares:
+		#return False if no value 0 in flattened squares grid
+		if not 0 in [square.value for row in self.squares for square in row]:
 			return False
 
 		#generate random pos until one is empty (if square value equals 0 while loop breaks)
@@ -215,14 +216,8 @@ class Board(object):
 		#add either 2 or 4, with a ration of 4 : 1
 		new_value = random.choice((2,2,2,2,4))
 		self.squares[random_pos[1]][random_pos[0]].value = new_value
-		#set the previous position to the current one
-		self.squares[random_pos[1]][random_pos[0]].previous_pos = (random_pos[0],random_pos[1])
 
 		return True
-
-	#add specific value to position for debugging purposes
-	def add_square(self, value, position):
-		self.squares[position[1]][position[0]].value = value
 
 	#draws the background, blits a surface with dimensions (scr_size)
 	def draw_bg(self):
@@ -235,18 +230,14 @@ class Board(object):
 			for x in [0,1,2,3]:
 				draw_x = (self.margins[0]*0.955)+self.scr_size[0]*0.03 + x*(0.2425*(self.scr_size[0]-2*self.margins[0]))
 				draw_y = (self.margins[1]*0.955)+self.scr_size[1]*0.03 + y*(0.2425*(self.scr_size[1]-2*self.margins[1]))
-				square_rect = pygame.Rect(0,0, 0.2125*(self.scr_size[0]-2*self.margins[0]), 0.2125*(self.scr_size[1]-2*self.margins[1]))
-				square_rounded = AAfilledRoundedRect(square_rect, self.square_colors[0], 0.1)
-				self.surface.blit(square_rounded, (draw_x, draw_y))
+				self.surface.blit(self.rounded_empty_square, (draw_x, draw_y))
 
 	#draw the squares which make up the board
+	#distribute space: 5 x 4% empty, 4 x 20% square
 	def draw_squares(self):
-		#distribute space: 5 x 4% empty, 4 x 20% square
-		
-		#iterate over board
+		#iterate squares
 		for x_row in self.squares:
 			for sq_obj in x_row:
-				#get the draw positions from the square object
 				#start drawing at margin (mult. empirical factor!) + border width
 				x,y = sq_obj.pos
 				draw_x = (self.margins[0]*0.955)+self.scr_size[0]*0.03 + x*(0.2425*(self.scr_size[0]-2*self.margins[0]))
@@ -255,52 +246,45 @@ class Board(object):
 				#draw square and text if square value is not 0
 				if sq_obj.value:
 					#generate a Rect object of the right proportions (later converted to roundrect surface)
-					square_rect = pygame.Rect(0,0, 0.2125*(self.scr_size[0]-2*self.margins[0]), 0.2125*(self.scr_size[1]-2*self.margins[1]))
-					square_rounded = AAfilledRoundedRect(square_rect, self.square_colors[sq_obj.value], 0.1)
+					square_rounded = AAfilledRoundedRect(self.square_rect, self.square_colors[sq_obj.value], 0.1)
 					self.surface.blit(square_rounded, (draw_x, draw_y))
 					#create and blit font surface
-					font = pygame.font.SysFont("bold", int(self.scr_size[1]/12))
 					txt_color = self.txt_color_dark if (sq_obj.value <= 4) else self.txt_color_light
-					txt_surface = font.render(str(sq_obj.value), True, txt_color)
+					txt_surface = self.font.render(str(sq_obj.value), True, txt_color)
 					txt_x = draw_x+(0.2125*(self.scr_size[0]-2*self.margins[0]))/2-0.5*txt_surface.get_width()
 					txt_y = draw_y+(0.2125*(self.scr_size[1]-2*self.margins[1]))/2-0.5*txt_surface.get_height()
 					self.surface.blit(txt_surface, (txt_x, txt_y))
 
-	#draws the entire board, by first drawing bg then squares
+	#draws the entire board, by first drawing bg followed by squares
 	def draw(self):
 		self.draw_bg()
 		self.draw_squares()
 	
-
-	"""
-	The part below includes the methods for animating the movement
-	still highly experimental
-	
-	Algorithm:
-	- get the previous position and current position for a square
-	- for animation_time loop the animation
-	- if the previous position is "False" or equal to current skip the square
-	- normalize the movement over the animation time
-	- update draw_x for the square on each loop
-	- draw the board with the temporary intermediate draw_pos
-
-	"""
+	#animates the movement of squares after updating square values, before adding new square
 	def animate_squares(self):
-		#animation time in ms, framerate in 1/s
-		animation_time = 50
-		framerate = 100
+		"""
+		Algorithm:
+		- get the previous position and current position for a square
+		- for animation_time loop the animation
+		- if the previous position is "False" or equal to current skip the square
+		- normalize the movement over the animation time
+		- update draw_x for the square on each loop
+		- draw the board with the temporary intermediate draw_pos
+		"""
 
 		#flatten the square objects nested array
 		squares_flattened = [square for row in self.squares for square in row]
-		squares_flattened_copy = [square for row in copy.deepcopy(self.squares) for square in row]
+		squares_flattened_copy = copy.deepcopy(squares_flattened)
 		squares_flattened_old_pos = [square.previous_pos for square in squares_flattened_copy]
 		squares_flattened_new_pos = [square.pos for square in squares_flattened_copy]
 
-
-		#initialize the animation
+		#initialize the animation. animation/elapsed time in ms, framerate in 1/s
+		animation_time = 100
+		framerate = 100
 		time_elapsed = 0
 		clock = pygame.time.Clock()
 
+		#animation loop
 		while time_elapsed < animation_time:
 			dt = clock.tick(framerate)
 			animation_progress = time_elapsed/animation_time
@@ -308,7 +292,9 @@ class Board(object):
 			#iterate over flattened squares and interpolate position from copied square values
 			for index, square in enumerate(squares_flattened):
 				if square.value != 0:
-					square.pos = (squares_flattened_old_pos[index][0]+(squares_flattened_new_pos[index][0]-squares_flattened_old_pos[index][0])*animation_progress, squares_flattened_old_pos[index][1]+(squares_flattened_new_pos[index][1]-squares_flattened_old_pos[index][1])*animation_progress)
+					x_old, y_old = squares_flattened_old_pos[index]
+					x_new, y_new = squares_flattened_new_pos[index]
+					square.pos = (x_old+(x_new-x_old)*animation_progress, y_old+(y_new-y_old)*animation_progress)
 
 			time_elapsed += dt
 
