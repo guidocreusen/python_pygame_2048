@@ -5,11 +5,15 @@ import random
 import copy
 from square import Square
 
+#board instance has a 2D list (4x4) attribute holding the square objects
+#board class has methods for game movement, drawing, controlling square values
+#board instance is controlled directly from 2048.py
 class Board(object):
-
 	#color values
 	bg_color = (187, 173, 160)
-	colors = {
+	txt_color_light = (249,247,243)
+	txt_color_dark = (117, 109, 101)
+	square_colors = {
 		0: (205, 192, 180),
 		2: (238, 228, 218),
 		4: (237, 224, 200),
@@ -23,12 +27,11 @@ class Board(object):
 		1024: (237, 196, 75),
 		2048: (237, 192, 70),
 	}
-	txt_color_light = (249,247,243)
-	txt_color_dark = (117, 109, 101)
 
-	#inits the board
-	def __init__(self, scr_size, margins):
-		#board is initialized with scr_size and margin attributes
+	#inits the board with surface to draw to and scr_size and margin attributes
+	#creates a 4x4 grid and fills it with square objects with value 0
+	def __init__(self, surface, scr_size, margins):
+		self.surface = surface
 		self.scr_size = scr_size
 		self.margins = margins
 
@@ -36,53 +39,46 @@ class Board(object):
 		self.squares = []
 		for i in range(4):
 			self.squares.append([Square(0,(0,i)), Square(0,(1,i)), Square(0,(2,i)), Square(0,(3,i))])
-
 	
 	#changes positions according to core game mechanism in a certain direction
-	#direction as string "up, down, left, right" (keys bindings in 2048.py)
+	#takes direction parameter as string "up, down, left, right" (keys bindings in 2048.py)
 	#returns True if squares moved, False if none moved which is checked by deepcopying the board
 	def move_in_direction(self, direction):
 		"""
 		core algorithm: 
-		loop over row from side the row is moved towards
-		if row is empty move to next
-		if the next square is empty, move all others by one and repeat on same square until not empty or row empty 
-		move through row, and repeat for all empty squares except empty end
-		repeat loop over row
-		if the next square is the same, merge them and move all others behind by one
-		if the next square is non-empty non-identical, move to next square in loop
+		loop over each row twice starting from side moved towards, first time deleting empty squares second time merging identical squares
+		implemented for left/right movement. Up/down transposes the board, moves right (down) or left (up) and transposes back
 
-		up/down movement transposes the nested lists, moves right (down) or left (up) and transposes them back
+		implementation pseudocode
+		- iterate rows in grid
+		- iterate squares in row starting from side the row is moved towards
+		- if the square is empty, delete it and append empty square at end
+		- repeat on same square until not either empty anymore (move to next square) or row empty (move to next row)
+		- iterate squares in row second time
+		- if the next square is the same, merge them, delete the next square and append empty square
+		- if the next square is non-empty non-identical, move to next square in iteration
+
+		check if a move was made by comparing new board to old deepcopy of board (flatten grid and store square values in list)
 		"""
 
 		#stores a deepcopy of the board to check if any square moved later
-		old_squares = copy.deepcopy(self.squares)
+		old_square_values_flattened = [square.value for row in copy.deepcopy(self.squares) for square in row]
 
 		#case switch the direction parameter
 		if direction == "left":
-			#loop over rows
+			#iterate rows
 			y = 0
 			for x_row in self.squares:
-				#jump to next row if empty (maybe remove later)
-				row_empty = True
-				for sq_obj in x_row:
-					if sq_obj.value != 0:
-						row_empty = False
-				if row_empty:
-					y += 1
-					continue
-
-				#loop over squares in row from left to right
+				#iterate squares in row first time deleting empty squares
 				x = 0
 				for sq_obj in x_row:
-
 					"""
 					if square is empty delete the list entry, append zero and repeat until not empty
 					break if all following squares are empty
-					NOTE: needs to use x_row[x] instead of square because iterating and modifying list at the same time
+					NOTE: needs to use x_row[x] instead of sq_obj because iterating and modifying list at the same time
 					"""
 					while x_row[x].value == 0 and x <= 2:
-						#move to next x if all others also empty
+						#move to next row if all others also empty
 						rest_of_row_empty = True
 						for n in range(x+1, 4):
 							if not self.get_square((n,y)).value == 0:
@@ -90,7 +86,7 @@ class Board(object):
 						if rest_of_row_empty:
 								break
 
-						#move all others by one
+						#delete current empty square and add new empty square to end of row
 						del (self.squares[y][x])
 						self.squares[y].append(Square(0,(x,y)))
 					x += 1
@@ -98,7 +94,7 @@ class Board(object):
 				#repeat the loop over x-row after deleting empty
 				x = 0
 				for sq_obj in x_row:
-					#if next square is the same, double it and contract the rest
+					#if next square is the same, double it, delete the next and add empty square to end of row
 					if x <= 2 and x_row[x].value == x_row[x+1].value:
 						self.squares[y][x].value *= 2
 						del(self.squares[y][x+1])
@@ -107,38 +103,26 @@ class Board(object):
 				y += 1
 
 		elif direction == "up":
-			#transpose
+			#transpose, move left, transpose back
 			self.squares = list(map(list, zip(*self.squares)))
-			#move left
 			self.move_in_direction("left")
-			#transpose back
 			self.squares = list(map(list, zip(*self.squares)))
 
 
 		elif direction == "right":
-			#loop over rows
+			#iterate rows
 			y = 0
 			for x_row in self.squares:
-				#jump to next row if empty (maybe remove later)
-				row_empty = True
-				for sq_obj in x_row:
-					if sq_obj.value != 0:
-						row_empty = False
-				if row_empty:
-					y += 1
-					continue
-
 				#loop over squares in row from right to left
 				x = 3
 				for sq_obj in x_row[::-1]:
-
 					"""
 					if square is empty delete the list entry, append zero and repeat until not empty
 					break if all following squares are empty
-					NOTE: needs to use x_row[x] instead of square because both iterating and modifying list
+					NOTE: needs to use x_row[x] instead of sq_obj because iterating and modifying list at the same time
 					"""
 					while x_row[x].value == 0 and x >= 1:
-						#move to next x if all others also empty
+						#move to next row if all others also empty
 						rest_of_row_empty = True
 						for n in range(0, x)[::-1]:
 							if not self.get_square((n,y)).value == 0:
@@ -146,7 +130,7 @@ class Board(object):
 						if rest_of_row_empty:
 								break
 
-						#move all others by one
+						#delete current empty square and add new empty square to beginning of row
 						del (self.squares[y][x])
 						self.squares[y].insert(0, Square(0,(x,y)))
 					x -= 1
@@ -154,7 +138,7 @@ class Board(object):
 				#repeat the loop over x-row after deleting empty
 				x = 3
 				for sq_obj in x_row[::-1]:
-					#if next square is the same, double it and contract the rest
+					#if next square is the same, double it, delete the next and add empty square to beginning of row
 					if x >= 1 and x_row[x].value == x_row[x-1].value:
 						self.squares[y][x].value *= 2
 						del(self.squares[y][x-1])
@@ -163,25 +147,22 @@ class Board(object):
 				y += 1
 
 		elif direction == "down":
-			#transpose
+			#transpose, move left, transpose back
 			self.squares = list(map(list, zip(*self.squares)))
-			#move right
 			self.move_in_direction("right")
-			#transpose back
 			self.squares = list(map(list, zip(*self.squares)))
 
-		#compares the old deepcopy with the current board and returns if a square has moved
+		#compares the old deepcopy values with the current board and returns true if a square has moved, false if not
 		square_moved = False
-		old_square_values_flattened = [item.value for row in old_squares for item in row]
-		new_square_values_flattened = [item.value for row in self.squares for item in row]
+		new_square_values_flattened = [square.value for row in self.squares for square in row]
 		if old_square_values_flattened != new_square_values_flattened:
 			square_moved = True
 		return square_moved
 
 	#updates the x,y position and previous position for the square objects 
 	#triggers the animation for the movement
-	def update_squares_position(self, surface):
-		#iterate over squares
+	def update_squares_position(self):
+		#iterate squares
 		for y,x_row in enumerate(self.squares):
 			for x,square in enumerate(x_row):
 				#store the last position of the square in the according attribute
@@ -192,22 +173,24 @@ class Board(object):
 				if square.value == 0:
 					square.previous_pos = (x,y)
 
-		self.animate_squares(surface)
+		self.animate_squares(self.surface)
 
 	#returns true if two squares have the same value
 	def same_value(self, position1, position2):
 		return True if self.get_square(position1).value == self.get_square(position2).value else False
 
-	#returns the value of a square
+	#returns the square object at position (x,y)
 	def get_square(self, position):
 		return self.squares[position[1]][position[0]]
 
 	#returns true if the board is full and no further moves can be made, otherwise returns false
 	def game_over(self):
-		#deepcopy the board, move in all directions on the copied board and compare to original (after every move)
+		#deepcopy the board squares, move in all directions on the copied board and compare to original (after every move)
+		#NOTE: cannot deepcopy board directly because it has a Pyame surface as attribute which cannot be deepcopied
 		board_same = True
 		for direction in ["left", "up", "right", "down"]:
-			board_copy = copy.deepcopy(self)
+			board_copy = Board(self.surface, self.scr_size, self.margins)
+			board_copy.squares = copy.deepcopy(self.squares)
 			board_copy.move_in_direction(direction)
 			#repeated code, move into seperate function later
 			old_square_values_flattened = [item.value for row in board_copy.squares for item in row]
@@ -242,10 +225,10 @@ class Board(object):
 		self.squares[position[1]][position[0]].value = value
 
 	#draws the background, blits a surface with dimensions (scr_size)
-	def draw_bg(self, surface):
+	def draw_bg(self):
 		bg_rect = pygame.Rect(0, 0, self.scr_size[0]-2*self.margins[0], self.scr_size[1]-2*self.margins[1])
 		bg_rounded = AAfilledRoundedRect(bg_rect, self.bg_color, 0.04)
-		surface.blit(bg_rounded, (self.margins[0], self.margins[1]))
+		self.surface.blit(bg_rounded, (self.margins[0], self.margins[1]))
 
 		#draw empty squares
 		for y in [0,1,2,3]:
@@ -253,11 +236,11 @@ class Board(object):
 				draw_x = (self.margins[0]*0.955)+self.scr_size[0]*0.03 + x*(0.2425*(self.scr_size[0]-2*self.margins[0]))
 				draw_y = (self.margins[1]*0.955)+self.scr_size[1]*0.03 + y*(0.2425*(self.scr_size[1]-2*self.margins[1]))
 				square_rect = pygame.Rect(0,0, 0.2125*(self.scr_size[0]-2*self.margins[0]), 0.2125*(self.scr_size[1]-2*self.margins[1]))
-				square_rounded = AAfilledRoundedRect(square_rect, self.colors[0], 0.1)
-				surface.blit(square_rounded, (draw_x, draw_y))
+				square_rounded = AAfilledRoundedRect(square_rect, self.square_colors[0], 0.1)
+				self.surface.blit(square_rounded, (draw_x, draw_y))
 
 	#draw the squares which make up the board
-	def draw_squares(self, surface):
+	def draw_squares(self):
 		#distribute space: 5 x 4% empty, 4 x 20% square
 		
 		#iterate over board
@@ -273,20 +256,20 @@ class Board(object):
 				if sq_obj.value:
 					#generate a Rect object of the right proportions (later converted to roundrect surface)
 					square_rect = pygame.Rect(0,0, 0.2125*(self.scr_size[0]-2*self.margins[0]), 0.2125*(self.scr_size[1]-2*self.margins[1]))
-					square_rounded = AAfilledRoundedRect(square_rect, self.colors[sq_obj.value], 0.1)
-					surface.blit(square_rounded, (draw_x, draw_y))
+					square_rounded = AAfilledRoundedRect(square_rect, self.square_colors[sq_obj.value], 0.1)
+					self.surface.blit(square_rounded, (draw_x, draw_y))
 					#create and blit font surface
 					font = pygame.font.SysFont("bold", int(self.scr_size[1]/12))
 					txt_color = self.txt_color_dark if (sq_obj.value <= 4) else self.txt_color_light
 					txt_surface = font.render(str(sq_obj.value), True, txt_color)
 					txt_x = draw_x+(0.2125*(self.scr_size[0]-2*self.margins[0]))/2-0.5*txt_surface.get_width()
 					txt_y = draw_y+(0.2125*(self.scr_size[1]-2*self.margins[1]))/2-0.5*txt_surface.get_height()
-					surface.blit(txt_surface, (txt_x, txt_y))
+					self.surface.blit(txt_surface, (txt_x, txt_y))
 
 	#draws the entire board, by first drawing bg then squares
-	def draw(self, surface):
-		self.draw_bg(surface)
-		self.draw_squares(surface)
+	def draw(self):
+		self.draw_bg()
+		self.draw_squares()
 	
 
 	"""
@@ -329,7 +312,7 @@ class Board(object):
 
 			time_elapsed += dt
 
-			self.draw(surface)
+			self.draw()
 			pygame.display.update()
 
 		#after animation fix square positions as animation causes small deviation

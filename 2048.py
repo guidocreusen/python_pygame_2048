@@ -14,7 +14,7 @@ pygame.init()
 scr = pygame.display.set_mode(SCR_SIZE, 0, 32)
 scr.fill((240,240,240))
 
-board = Board(SCR_SIZE, MARGINS)
+board = Board(scr, SCR_SIZE, MARGINS)
 board.add_random_square()
 board.add_random_square()
 
@@ -25,13 +25,13 @@ key_bindings = {
 	K_DOWN: "down"
 }
 
-board.draw(scr)
+board.draw()
 
 pygame.display.update()
 
 #shows the game over message
 def game_over():
-	board.draw(scr)
+	board.draw()
 	overlay = pygame.Surface((SCR_SIZE[0], SCR_SIZE[1]), pygame.SRCALPHA)
 	overlay.fill((20,20,20,200))
 	scr.blit(overlay, (0,0))
@@ -43,14 +43,14 @@ def game_over():
 	font = pygame.font.SysFont("bold", 60)
 	font_small = pygame.font.SysFont("arial", 15)
 	txt_game_over = font.render("Game Over", True, (50,50,50))
-	txt_press_button = font_small.render("press any button to exit", True, (50,50,50))
+	txt_press_button = font_small.render("press any key to exit", True, (50,50,50))
 	scr.blit(txt_game_over, (SCR_SIZE[0]/2-txt_game_over.get_width()/2,SCR_SIZE[1]/2-txt_game_over.get_height()/2))
 	scr.blit(txt_press_button, (SCR_SIZE[0]/2-txt_press_button.get_width()/2,SCR_SIZE[1]/2-txt_game_over.get_height()/2+50))
 
 
 	pygame.display.update()
 
-	#wait for F press
+	#wait for keypress
 	event = pygame.event.wait()
 	while not event.type == KEYDOWN:
 		event = pygame.event.wait()
@@ -73,7 +73,7 @@ while True:
 		#if a valid move is made add a square
 		if event.key in key_bindings:
 			if board.move_in_direction(key_bindings[event.key]):
-				board.update_squares_position(scr)		
+				board.update_squares_position()		
 				board.add_random_square()
 	else:
 		continue
@@ -84,6 +84,6 @@ while True:
 
 	#draw bg and board
 	scr.fill((240,240,240))
-	board.draw(scr)
+	board.draw()
 
 	pygame.display.update()
