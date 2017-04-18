@@ -228,24 +228,18 @@ class Board(object):
 		#draw empty squares
 		for y in [0,1,2,3]:
 			for x in [0,1,2,3]:
-				draw_x = (self.margins[0]*0.955)+self.scr_size[0]*0.03 + x*(0.2425*(self.scr_size[0]-2*self.margins[0]))
-				draw_y = (self.margins[1]*0.955)+self.scr_size[1]*0.03 + y*(0.2425*(self.scr_size[1]-2*self.margins[1]))
-				self.surface.blit(self.rounded_empty_square, (draw_x, draw_y))
+				self.surface.blit(self.rounded_empty_square, self.get_draw_pos((x,y)))
 
 	#draw the squares which make up the board
 	#distribute space: 5 x 4% empty, 4 x 20% square
 	def draw_squares(self):
 		#iterate squares
 		for x_row in self.squares:
-			for sq_obj in x_row:
-				#start drawing at margin (mult. empirical factor!) + border width
-				x,y = sq_obj.pos
-				draw_x = (self.margins[0]*0.955)+self.scr_size[0]*0.03 + x*(0.2425*(self.scr_size[0]-2*self.margins[0]))
-				draw_y = (self.margins[1]*0.955)+self.scr_size[1]*0.03 + y*(0.2425*(self.scr_size[1]-2*self.margins[1]))
-				
+			for sq_obj in x_row:				
 				#draw square and text if square value is not 0
 				if sq_obj.value:
-					#generate a Rect object of the right proportions (later converted to roundrect surface)
+					draw_x, draw_y = self.get_draw_pos(sq_obj.pos)
+					#convert the square_rect attribute to a rounded rect surface, get the color form square_color dict
 					square_rounded = AAfilledRoundedRect(self.square_rect, self.square_colors[sq_obj.value], 0.1)
 					self.surface.blit(square_rounded, (draw_x, draw_y))
 					#create and blit font surface
@@ -260,6 +254,13 @@ class Board(object):
 		self.draw_bg()
 		self.draw_squares()
 	
+	#returns the position (x,y) for drawing a square
+	def get_draw_pos(self, pos):
+		#start drawing at margin (mult. empirical factor!) + border width
+		draw_x = (self.margins[0]*0.955)+self.scr_size[0]*0.03 + pos[0]*(0.2425*(self.scr_size[0]-2*self.margins[0]))
+		draw_y = (self.margins[1]*0.955)+self.scr_size[1]*0.03 + pos[1]*(0.2425*(self.scr_size[1]-2*self.margins[1]))
+		return (draw_x,draw_y)
+
 	#animates the movement of squares after updating square values, before adding new square
 	def animate_squares(self):
 		"""
