@@ -6,3 +6,4 @@ class Square(object):
 		self.pos = position
 		self.previous_pos = position
 		self.resize_factor = 1.0
+		self.was_doubled = False

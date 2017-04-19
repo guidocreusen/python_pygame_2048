@@ -102,6 +102,7 @@ class Board(object):
 					#if next square is the same, double it, delete the next and add empty square to end of row
 					if x <= 2 and x_row[x].value == x_row[x+1].value:
 						self.squares[y][x].value *= 2
+						self.squares[y][x].was_doubled = True
 						del(self.squares[y][x+1])
 						self.squares[y].append(Square(0, (x,y)))
 					x += 1
@@ -146,6 +147,7 @@ class Board(object):
 					#if next square is the same, double it, delete the next and add empty square to beginning of row
 					if x >= 1 and x_row[x].value == x_row[x-1].value:
 						self.squares[y][x].value *= 2
+						self.squares[y][x].was_doubled = True
 						del(self.squares[y][x-1])
 						self.squares[y].insert(0, Square(0, (x,y)))
 					x -= 1
@@ -296,12 +298,16 @@ class Board(object):
 			dt = clock.tick(framerate)
 			animation_progress = time_elapsed/animation_time
 
-			#iterate over flattened squares and interpolate position from copied square values
+			#iterate over flattened squares and interpolate position from copied square values and modify resize for doubled squares
 			for index, square in enumerate(squares_flattened):
 				if square.value != 0:
 					x_old, y_old = squares_flattened_old_pos[index]
 					x_new, y_new = squares_flattened_new_pos[index]
 					square.pos = (x_old+(x_new-x_old)*animation_progress, y_old+(y_new-y_old)*animation_progress)
+
+					#size increases and decreases as animation progresses
+					if square.was_doubled:
+						square.resize_factor = 1+0.4*(0.5-abs(0.5-animation_progress))
 
 			time_elapsed += dt
 
@@ -309,5 +315,8 @@ class Board(object):
 			pygame.display.update()
 
 		#after animation fix square positions as animation causes small deviation
+		#set was_doubled attribute back to false
 		for index, square in enumerate(squares_flattened):
 			square.pos = (squares_flattened_new_pos[index][0], squares_flattened_new_pos[index][1])
+			square.was_doubled = False
+			square.resize_factor = 1.0
