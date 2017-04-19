@@ -37,6 +37,7 @@ class Board(object):
 		self.margins = margins
 		self.font = pygame.font.SysFont("bold", int(scr_size[1]/12))
 		self.square_rect = pygame.Rect(0,0, 0.2125*(scr_size[0]-2*margins[0]), 0.2125*(scr_size[1]-2*margins[1]))
+		self.square_rect_size = 0.2125*(scr_size[0]-2*margins[0])
 		self.rounded_empty_square = AAfilledRoundedRect(self.square_rect, self.square_colors[0], 0.1)
 
 		#creates the 4x4 squares grid as a 2D list
@@ -238,15 +239,20 @@ class Board(object):
 			for sq_obj in x_row:				
 				#draw square and text if square value is not 0
 				if sq_obj.value:
-					draw_x, draw_y = self.get_draw_pos(sq_obj.pos)
+					draw_x, draw_y = self.get_draw_pos(sq_obj.pos)					
+
 					#convert the square_rect attribute to a rounded rect surface, get the color form square_color dict
-					square_rounded = AAfilledRoundedRect(self.square_rect, self.square_colors[sq_obj.value], 0.1)
+					#if the square object has a modified resize_factor attribute modify the pygame.Rect accordingly				
+					modify_rect_size = self.square_rect_size*(sq_obj.resize_factor-1)
+					draw_x -= modify_rect_size*0.5
+					draw_y -= modify_rect_size*0.5
+					square_rounded = AAfilledRoundedRect(self.square_rect.inflate(modify_rect_size, modify_rect_size), self.square_colors[sq_obj.value], 0.1)
 					self.surface.blit(square_rounded, (draw_x, draw_y))
 					#create and blit font surface
 					txt_color = self.txt_color_dark if (sq_obj.value <= 4) else self.txt_color_light
 					txt_surface = self.font.render(str(sq_obj.value), True, txt_color)
-					txt_x = draw_x+(0.2125*(self.scr_size[0]-2*self.margins[0]))/2-0.5*txt_surface.get_width()
-					txt_y = draw_y+(0.2125*(self.scr_size[1]-2*self.margins[1]))/2-0.5*txt_surface.get_height()
+					txt_x = draw_x+modify_rect_size*0.5+(0.2125*(self.scr_size[0]-2*self.margins[0]))/2-0.5*txt_surface.get_width()
+					txt_y = draw_y+modify_rect_size*0.5+(0.2125*(self.scr_size[1]-2*self.margins[1]))/2-0.5*txt_surface.get_height()
 					self.surface.blit(txt_surface, (txt_x, txt_y))
 
 	#draws the entire board, by first drawing bg followed by squares
