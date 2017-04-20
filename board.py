@@ -169,9 +169,15 @@ class Board(object):
 	#updates the x,y position and previous position for the square objects 
 	#triggers the animation for the movement
 	def update_squares_position(self):
+		#store if 2048 occured
+		win = False
+
 		#iterate squares
 		for y,x_row in enumerate(self.squares):
 			for x,square in enumerate(x_row):
+				#checks if game over by win
+				if square.value == 2048:
+					win = True
 				#store the last position of the square in the according attribute
 				square.previous_pos = square.pos
 				square.pos = (x,y)
@@ -181,6 +187,9 @@ class Board(object):
 					square.previous_pos = (x,y)
 
 		self.animate_squares()
+
+		if win:
+			self.game_over_animation(True)
 
 	#returns true if two squares have the same value
 	def same_value(self, position1, position2):
@@ -205,8 +214,8 @@ class Board(object):
 				return False
 		return True
 
-	#shows the game over message
-	def game_over_animation(self):
+	#shows the game over message, taking "win" as a parameter for a lose or win game over
+	def game_over_animation(self, win):
 		self.draw()
 		pygame.display.update()
 
@@ -239,7 +248,8 @@ class Board(object):
 		#game over text message
 		font = pygame.font.SysFont("bold", 60)
 		font_small = pygame.font.SysFont("arial", 15)
-		txt_game_over = font.render("Game Over", True, (50,50,50))
+		message = "You win!" if win else "Game Over"
+		txt_game_over = font.render(message, True, (50,50,50))
 		txt_press_button = font_small.render("press any key to exit", True, (50,50,50))
 		self.surface.blit(txt_game_over, (self.scr_size[0]/2-txt_game_over.get_width()/2,self.scr_size[1]/2-txt_game_over.get_height()/2))
 		self.surface.blit(txt_press_button, (self.scr_size[0]/2-txt_press_button.get_width()/2,self.scr_size[1]/2-txt_game_over.get_height()/2+50))

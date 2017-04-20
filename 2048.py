@@ -47,7 +47,7 @@ while True:
 
 	#game over
 	if board.game_over():
-		board.game_over_animation()
+		board.game_over_animation(False)
 		#wait for keypress or quit, then exit programm (clear event queue first)
 		pygame.event.get()
 		event = pygame.event.wait()
