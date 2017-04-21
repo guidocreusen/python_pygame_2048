@@ -48,13 +48,6 @@ while True:
 	#game over
 	if board.game_over():
 		board.game_over_animation(False)
-		#wait for keypress or quit, then exit programm (clear event queue first)
-		pygame.event.get()
-		event = pygame.event.wait()
-		while not (event.type == KEYDOWN or event.type == QUIT):
-			event = pygame.event.wait()
-			continue
-		sys.exit()
 
 	#draw bg and board
 	scr.fill((240,240,240))

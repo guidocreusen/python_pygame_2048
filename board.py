@@ -1,8 +1,10 @@
 #imports
 import pygame
+from pygame.locals import *
 from aaroundedrect import *
 import random
 import copy
+import sys
 from square import Square
 
 #board instance has a 2D list (4x4) attribute holding the square objects
@@ -32,6 +34,7 @@ class Board(object):
 	#has attributes for Pygame font and rect surface as these otherwise need to be generated frequently
 	#creates a 4x4 grid and fills it with square objects with value 0
 	def __init__(self, surface, scr_size, margins):
+		self.score = 0
 		self.surface = surface
 		self.scr_size = scr_size
 		self.margins = margins
@@ -105,6 +108,7 @@ class Board(object):
 						self.squares[y][x].was_doubled = True
 						del(self.squares[y][x+1])
 						self.squares[y].append(Square(0, (x,y)))
+						self.score += self.squares[y][x].value
 					x += 1
 				y += 1
 
@@ -150,6 +154,7 @@ class Board(object):
 						self.squares[y][x].was_doubled = True
 						del(self.squares[y][x-1])
 						self.squares[y].insert(0, Square(0, (x,y)))
+						self.score += self.squares[y][x].value
 					x -= 1
 				y += 1
 
@@ -256,6 +261,14 @@ class Board(object):
 
 		pygame.display.update()
 
+		#wait for keypress or quit, then exit programm (clear event queue first)
+		pygame.event.get()
+		event = pygame.event.wait()
+		while not (event.type == KEYDOWN or event.type == QUIT):
+			event = pygame.event.wait()
+			continue
+		sys.exit()
+
 	#adds a random value of either 2 or 4 on an empty square, returns False if no empty squares otherwise True
 	def add_random_square(self):
 		#return False if no value 0 in flattened squares grid
@@ -283,6 +296,14 @@ class Board(object):
 		for y in [0,1,2,3]:
 			for x in [0,1,2,3]:
 				self.surface.blit(self.rounded_empty_square, self.get_draw_pos((x,y)))
+	
+	#draws the score
+	def draw_score(self):
+		font = pygame.font.SysFont("bold", 60)
+		score_surface = font.render(str(self.score), True, (50,50,50))
+		score_x = (self.scr_size[0]-score_surface.get_width())/2
+		score_y = (self.margins[1]-score_surface.get_height())/2
+		self.surface.blit(score_surface, (score_x,score_y))
 
 	#draw the squares which make up the board
 	#distribute space: 5 x 4% empty, 4 x 20% square
@@ -312,6 +333,7 @@ class Board(object):
 	def draw(self):
 		self.draw_bg()
 		self.draw_squares()
+		self.draw_score()
 	
 	#returns the position (x,y) for drawing a square
 	def get_draw_pos(self, pos):
