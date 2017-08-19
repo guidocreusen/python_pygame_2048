@@ -38,13 +38,6 @@ def AAfilledRoundedRect(rect,color,radius=0.4):
     rectangle.fill((255,255,255,alpha),special_flags=pygame.BLEND_RGBA_MIN)
 
     return rectangle
-
-#if __name__ == "__main__":
-#    scr = pygame.display.set_mode((300,300))
-#    scr.fill((255,255,255))
-#
-#    surf = AAfilledRoundedRect((0, 0, 50, 100), (0,255,0))
-#    scr.blit(surf, (125,100))
 #    
 #    pygame.display.flip()
 #    while pygame.event.wait().type != pygame.QUIT: pass
