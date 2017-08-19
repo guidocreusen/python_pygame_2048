@@ -38,6 +38,3 @@ def AAfilledRoundedRect(rect,color,radius=0.4):
     rectangle.fill((255,255,255,alpha),special_flags=pygame.BLEND_RGBA_MIN)
 
     return rectangle
-#    
-#    pygame.display.flip()
-#    while pygame.event.wait().type != pygame.QUIT: pass
